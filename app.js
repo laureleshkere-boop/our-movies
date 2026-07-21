@@ -19,8 +19,8 @@ const OMDB_API_KEY = "3b3dd1df";
 // После того как создашь двух пользователей в Firebase Authentication,
 // впиши их UID и имена сюда (UID виден в Authentication -> Users)
 const USERS = {
-  "UID_ВАЛИКА": { name: "Валик" },
-  "UID_ДЕВУШКИ": { name: "Она" }
+  "v0SB80CbucOHEhXmVnI61zpOp4J2": { name: "влад нос" },
+  "PfDv8MRtgthWtmO9ZBfU5tZPeFI3": { name: "ульяна текстиль" }
 };
 
 // ==============================
