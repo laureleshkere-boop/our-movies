@@ -99,6 +99,79 @@ textarea { resize: vertical; }
 }
 .topbar h1 { font-size: 1.2rem; margin: 0; }
 
+/* ---------- Tabs ---------- */
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px 0;
+  overflow-x: auto;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #333;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.type-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-left: 6px;
+}
+
+/* ---------- Type select (modal) ---------- */
+.type-select {
+  display: flex;
+  gap: 8px;
+}
+.type-opt {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid #3a3a3a;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.type-opt.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: #3a2222;
+}
+
+/* ---------- Poster upload ---------- */
+.upload-label {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  border: 1px dashed #444;
+  border-radius: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+#poster-preview img {
+  width: 120px;
+  border-radius: 8px;
+  margin-top: 8px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
 /* ---------- Movie list ---------- */
 .movie-list {
   padding: 12px;
