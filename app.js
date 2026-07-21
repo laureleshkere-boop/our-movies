@@ -36,7 +36,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Бесплатный ключ на https://www.omdbapi.com/apikey.aspx (необязательно, можно вставлять ссылки вручную)
-const OMDB_API_KEY = "ВСТАВЬ_СЮДА";
+const OMDB_API_KEY = "3b3dd1df";
 
 const TYPE_LABELS = { movie: "🎬 Фильм", series: "📺 Сериал", cartoon: "🧸 Мультфильм" };
 
