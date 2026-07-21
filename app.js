@@ -4,19 +4,19 @@
 // Вставь сюда конфиг из своего Firebase-проекта
 // (Project settings -> General -> Your apps -> SDK setup and configuration)
 const firebaseConfig = {
-  apiKey: "ВСТАВЬ_СЮДА",
-  authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
-  projectId: "ВСТАВЬ_СЮДА",
-  storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
-  messagingSenderId: "ВСТАВЬ_СЮДА",
-  appId: "ВСТАВЬ_СЮДА"
+  apiKey: "AIzaSyCCJsXriwKGoth9OKspHtpZw0WFZgjnBCs",
+  authDomain: "ourmovies-6097c.firebaseapp.com",
+  projectId: "ourmovies-6097c",
+  storageBucket: "ourmovies-6097c.firebasestorage.app",
+  messagingSenderId: "205244333759",
+  appId: "1:205244333759:web:d33d7e133cf8d2ade1d00a"
 };
 
 // После того как создашь двух пользователей в Firebase Authentication,
 // впиши их UID и имена сюда (UID виден в Authentication -> Users)
 const USERS = {
-  "UID_ВАЛИКА": { name: "Валик" },
-  "UID_ДЕВУШКИ": { name: "Она" }
+  "v0SB80CbucOHEhXmVnI61zpOp4J2": { name: "влад нос" },
+  "PfDv8MRtgthWtmO9ZBfU5tZPeFI3": { name: "ульяна текстиль" }
 };
 
 // ==============================
