@@ -4,19 +4,19 @@
 // Вставь сюда конфиг из своего Firebase-проекта
 // (Project settings -> General -> Your apps -> SDK setup and configuration)
 const firebaseConfig = {
-  apiKey: "AIzaSyCCJsXriwKGoth9OKspHtpZw0WFZgjnBCs",
-  authDomain: "ourmovies-6097c.firebaseapp.com",
-  projectId: "ourmovies-6097c",
-  storageBucket: "ourmovies-6097c.firebasestorage.app",
-  messagingSenderId: "205244333759",
-  appId: "1:205244333759:web:d33d7e133cf8d2ade1d00a"
+  apiKey: "ВСТАВЬ_СЮДА",
+  authDomain: "ВСТАВЬ_СЮДА.firebaseapp.com",
+  projectId: "ВСТАВЬ_СЮДА",
+  storageBucket: "ВСТАВЬ_СЮДА.appspot.com",
+  messagingSenderId: "ВСТАВЬ_СЮДА",
+  appId: "ВСТАВЬ_СЮДА"
 };
 
 // После того как создашь двух пользователей в Firebase Authentication,
 // впиши их UID и имена сюда (UID виден в Authentication -> Users)
 const USERS = {
-  "v0SB80CbucOHEhXmVnI61zpOp4J2": { name: "влад нос" },
-  "PfDv8MRtgthWtmO9ZBfU5tZPeFI3": { name: "ульяна текстиль" }
+  "UID_ВАЛИКА": { name: "Валик" },
+  "UID_ДЕВУШКИ": { name: "Она" }
 };
 
 // ==============================
@@ -28,19 +28,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, serverTimestamp
+  onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
+
+// Бесплатный ключ на https://www.omdbapi.com/apikey.aspx (необязательно, можно вставлять ссылки вручную)
+const OMDB_API_KEY = "ВСТАВЬ_СЮДА";
 
 const TYPE_LABELS = { movie: "🎬 Фильм", series: "📺 Сериал", cartoon: "🧸 Мультфильм" };
-const POSTER_W = 300, POSTER_H = 450; // соотношение постера 2:3
 
 // ==============================
 // 3. DOM-ЭЛЕМЕНТЫ
@@ -60,12 +58,22 @@ const movieModalTitle = document.getElementById("movie-modal-title");
 const movieTitleInput = document.getElementById("movie-title-input");
 const movieDateInput = document.getElementById("movie-date-input");
 const posterPreview = document.getElementById("poster-preview");
-const posterFileInput = document.getElementById("poster-file-input");
-const posterCanvas = document.getElementById("poster-canvas");
+const posterUrlInput = document.getElementById("poster-url-input");
+const fetchPosterBtn = document.getElementById("fetch-poster-btn");
 const movieTypeSelect = document.getElementById("movie-type-select");
 const movieCancelBtn = document.getElementById("movie-cancel-btn");
 const movieSaveBtn = document.getElementById("movie-save-btn");
 const typeTabs = document.getElementById("type-tabs");
+
+const statsBtn = document.getElementById("stats-btn");
+const statsModal = document.getElementById("stats-modal");
+const statsBody = document.getElementById("stats-body");
+const statsCloseBtn = document.getElementById("stats-close-btn");
+const statusToggle = document.getElementById("status-toggle");
+const sortRow = document.getElementById("sort-row");
+const sortSelect = document.getElementById("sort-select");
+const movieStatusSelect = document.getElementById("movie-status-select");
+const dateFieldWrap = document.getElementById("date-field-wrap");
 
 const ratingModal = document.getElementById("rating-modal");
 const ratingScoreInput = document.getElementById("rating-score-input");
@@ -76,10 +84,12 @@ const ratingSaveBtn = document.getElementById("rating-save-btn");
 let currentUser = null;
 let currentMovies = [];
 let editingMovieId = null;   // если не null - редактируем существующий фильм (название/дата/постер)
-let pendingPosterUrl = "";   // URL уже сохранённого постера (при редактировании)
-let pendingPosterBlob = null; // новый обрезанный файл постера, ждущий загрузки
+let pendingPosterUrl = "";   // ссылка на постер (текстом)
 let pendingType = "movie";
+let pendingStatus = "watched";
 let currentFilter = "all";
+let currentStatusView = "watched";
+let currentSort = "date_desc";
 let ratingTargetMovieId = null; // фильм, для которого сейчас ставим оценку
 
 // ==============================
@@ -112,22 +122,99 @@ onAuthStateChanged(auth, (user) => {
 // 5. ПОДПИСКА НА СПИСОК ФИЛЬМОВ (реалтайм)
 // ==============================
 function subscribeToMovies() {
-  const q = query(collection(db, "movies"), orderBy("date", "desc"));
-  onSnapshot(q, (snapshot) => {
-    currentMovies = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  onSnapshot(collection(db, "movies"), (snapshot) => {
+    currentMovies = snapshot.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        createdAtMs: data.createdAt && data.createdAt.toMillis ? data.createdAt.toMillis() : 0
+      };
+    });
     renderMovies();
   });
 }
 
 function renderMovies() {
   movieListEl.innerHTML = "";
-  const filtered = currentFilter === "all"
-    ? currentMovies
-    : currentMovies.filter(m => (m.type || "movie") === currentFilter);
-  filtered.forEach(movie => {
-    movieListEl.appendChild(buildMovieCard(movie));
+
+  let list = currentMovies.filter(m => (m.status || "watched") === currentStatusView);
+  if (currentFilter !== "all") {
+    list = list.filter(m => (m.type || "movie") === currentFilter);
+  }
+
+  if (currentStatusView === "watched") {
+    list = sortMovies(list, currentSort);
+  } else {
+    // watchlist - просто по дате добавления, новые сверху
+    list = list.slice().sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+  }
+
+  if (!list.length) {
+    movieListEl.innerHTML = `<p style="text-align:center;color:var(--text-dim);padding:30px 10px;">Пусто</p>`;
+    return;
+  }
+
+  list.forEach((movie, i) => {
+    const card = buildMovieCard(movie);
+    card.style.animationDelay = `${Math.min(i, 8) * 0.03}s`;
+    movieListEl.appendChild(card);
   });
 }
+
+function sortMovies(list, sortKey) {
+  const withScore = (m) => {
+    const scores = Object.values(m.ratings || {}).map(r => r.score).filter(s => typeof s === "number");
+    const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+    return { avg, scores };
+  };
+
+  const copy = list.slice();
+  switch (sortKey) {
+    case "date_asc":
+      return copy.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    case "date_desc":
+      return copy.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    case "rating_desc":
+      return copy.sort((a, b) => {
+        const av = withScore(a).avg, bv = withScore(b).avg;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        return bv - av;
+      });
+    case "rating_asc":
+      return copy.sort((a, b) => {
+        const av = withScore(a).avg, bv = withScore(b).avg;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        return av - bv;
+      });
+    case "disagreement":
+      return copy.sort((a, b) => {
+        const as = withScore(a).scores, bs = withScore(b).scores;
+        const ad = as.length === 2 ? Math.abs(as[0] - as[1]) : -1;
+        const bd = bs.length === 2 ? Math.abs(bs[0] - bs[1]) : -1;
+        return bd - ad;
+      });
+    default:
+      return copy;
+  }
+}
+
+statusToggle.addEventListener("click", (e) => {
+  const btn = e.target.closest(".status-opt");
+  if (!btn) return;
+  statusToggle.querySelectorAll(".status-opt").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentStatusView = btn.dataset.status;
+  sortRow.classList.toggle("hidden", currentStatusView !== "watched");
+  renderMovies();
+});
+
+sortSelect.addEventListener("change", () => {
+  currentSort = sortSelect.value;
+  renderMovies();
+});
 
 typeTabs.addEventListener("click", (e) => {
   const btn = e.target.closest(".tab");
@@ -141,6 +228,7 @@ typeTabs.addEventListener("click", (e) => {
 function buildMovieCard(movie) {
   const card = document.createElement("div");
   card.className = "movie-card";
+  const isWatchlist = (movie.status || "watched") === "watchlist";
 
   const ratings = movie.ratings || {};
   const scores = Object.values(ratings).map(r => r.score).filter(s => typeof s === "number");
@@ -152,8 +240,9 @@ function buildMovieCard(movie) {
     <img class="movie-poster" src="${movie.posterUrl || ''}" onerror="this.style.visibility='hidden'">
     <div class="movie-info">
       <h3>${escapeHtml(movie.title)}<span class="type-badge">${TYPE_LABELS[movie.type || "movie"]}</span></h3>
-      <div class="date">${movie.date || ""}</div>
-      <span class="avg-badge">★ ${avg}</span>
+      ${isWatchlist
+        ? `<span class="watchlist-tag">📌 В планах</span>`
+        : `<div class="date">${movie.date || ""}</div><span class="avg-badge">★ ${avg}</span>`}
     </div>
   `;
   header.addEventListener("click", () => {
@@ -163,35 +252,50 @@ function buildMovieCard(movie) {
   const body = document.createElement("div");
   body.className = "movie-card-body";
 
-  Object.entries(USERS).forEach(([uid, info]) => {
-    const r = ratings[uid];
-    const row = document.createElement("div");
-    row.className = "user-rating-row";
-    row.innerHTML = `
-      <div>
-        <div class="name">${info.name}</div>
-        ${r
-          ? `<div class="comment">${escapeHtml(r.comment || "")}</div>`
-          : `<div class="no-rating">пока нет оценки</div>`}
-      </div>
-      ${r ? `<div class="score">${r.score}</div>` : ""}
-    `;
-    body.appendChild(row);
-  });
+  if (!isWatchlist) {
+    Object.entries(USERS).forEach(([uid, info]) => {
+      const r = ratings[uid];
+      const row = document.createElement("div");
+      row.className = "user-rating-row";
+      row.innerHTML = `
+        <div>
+          <div class="name">${info.name}</div>
+          ${r
+            ? `<div class="comment">${escapeHtml(r.comment || "")}</div>`
+            : `<div class="no-rating">пока нет оценки</div>`}
+        </div>
+        ${r ? `<div class="score">${r.score}</div>` : ""}
+      `;
+      body.appendChild(row);
+    });
+  }
 
   const actions = document.createElement("div");
   actions.className = "card-actions";
 
-  const rateBtn = document.createElement("button");
-  rateBtn.className = "btn btn-primary";
-  const myRating = ratings[currentUser.uid];
-  rateBtn.textContent = myRating ? "Изменить мою оценку" : "Оценить";
-  rateBtn.addEventListener("click", () => openRatingModal(movie));
-  actions.appendChild(rateBtn);
+  if (isWatchlist) {
+    const watchedBtn = document.createElement("button");
+    watchedBtn.className = "btn btn-primary";
+    watchedBtn.textContent = "✅ Просмотрено";
+    watchedBtn.addEventListener("click", async () => {
+      await updateDoc(doc(db, "movies", movie.id), {
+        status: "watched",
+        date: new Date().toISOString().slice(0, 10)
+      });
+    });
+    actions.appendChild(watchedBtn);
+  } else {
+    const rateBtn = document.createElement("button");
+    rateBtn.className = "btn btn-primary";
+    const myRating = ratings[currentUser.uid];
+    rateBtn.textContent = myRating ? "Изменить мою оценку" : "Оценить";
+    rateBtn.addEventListener("click", () => openRatingModal(movie));
+    actions.appendChild(rateBtn);
+  }
 
   const editBtn = document.createElement("button");
   editBtn.className = "btn btn-secondary";
-  editBtn.textContent = "Ред. фильм";
+  editBtn.textContent = "Ред.";
   editBtn.addEventListener("click", () => openMovieModal(movie));
   actions.appendChild(editBtn);
 
@@ -199,7 +303,7 @@ function buildMovieCard(movie) {
   delBtn.className = "btn btn-danger";
   delBtn.textContent = "Удалить";
   delBtn.addEventListener("click", () => {
-    if (confirm(`Удалить "${movie.title}" целиком (обе оценки)?`)) {
+    if (confirm(`Удалить "${movie.title}"?`)) {
       deleteDoc(doc(db, "movies", movie.id));
     }
   });
@@ -220,21 +324,34 @@ movieCancelBtn.addEventListener("click", () => movieModal.classList.add("hidden"
 function openMovieModal(movie) {
   editingMovieId = movie ? movie.id : null;
   pendingPosterUrl = movie ? (movie.posterUrl || "") : "";
-  pendingPosterBlob = null;
   pendingType = movie ? (movie.type || "movie") : "movie";
+  pendingStatus = movie ? (movie.status || "watched") : currentStatusView;
 
   movieModalTitle.textContent = movie ? "Редактировать" : "Добавить";
   movieTitleInput.value = movie ? movie.title : "";
   movieDateInput.value = movie ? movie.date : new Date().toISOString().slice(0, 10);
+  posterUrlInput.value = pendingPosterUrl;
   posterPreview.innerHTML = pendingPosterUrl ? `<img src="${pendingPosterUrl}">` : "";
-  posterFileInput.value = "";
 
   movieTypeSelect.querySelectorAll(".type-opt").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.type === pendingType);
   });
+  movieStatusSelect.querySelectorAll(".type-opt").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.status === pendingStatus);
+  });
+  dateFieldWrap.classList.toggle("hidden", pendingStatus === "watchlist");
 
   movieModal.classList.remove("hidden");
 }
+
+movieStatusSelect.addEventListener("click", (e) => {
+  const btn = e.target.closest(".type-opt");
+  if (!btn) return;
+  pendingStatus = btn.dataset.status;
+  movieStatusSelect.querySelectorAll(".type-opt").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  dateFieldWrap.classList.toggle("hidden", pendingStatus === "watchlist");
+});
 
 movieTypeSelect.addEventListener("click", (e) => {
   const btn = e.target.closest(".type-opt");
@@ -244,73 +361,52 @@ movieTypeSelect.addEventListener("click", (e) => {
   btn.classList.add("active");
 });
 
-// Загрузка + автоматическая обрезка под постерный формат (2:3), центр-кроп
-posterFileInput.addEventListener("change", () => {
-  const file = posterFileInput.files[0];
-  if (!file) return;
+// Ручной ввод ссылки - превью обновляется на лету
+posterUrlInput.addEventListener("input", () => {
+  pendingPosterUrl = posterUrlInput.value.trim();
+  posterPreview.innerHTML = pendingPosterUrl ? `<img src="${pendingPosterUrl}" onerror="this.style.opacity=0.3">` : "";
+});
 
-  const img = new Image();
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    img.onload = () => {
-      const ctx = posterCanvas.getContext("2d");
-      ctx.clearRect(0, 0, POSTER_W, POSTER_H);
-
-      // Считаем область кропа по центру, чтобы получить соотношение 2:3
-      const targetRatio = POSTER_W / POSTER_H;
-      const srcRatio = img.width / img.height;
-      let sx, sy, sw, sh;
-      if (srcRatio > targetRatio) {
-        // картинка шире, чем нужно - обрезаем по бокам
-        sh = img.height;
-        sw = sh * targetRatio;
-        sx = (img.width - sw) / 2;
-        sy = 0;
-      } else {
-        // картинка выше, чем нужно - обрезаем сверху/снизу
-        sw = img.width;
-        sh = sw / targetRatio;
-        sx = 0;
-        sy = (img.height - sh) / 2;
-      }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, POSTER_W, POSTER_H);
-
-      posterCanvas.toBlob((blob) => {
-        pendingPosterBlob = blob;
-        posterPreview.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
-      }, "image/jpeg", 0.85);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+// Необязательный быстрый поиск постера по названию через OMDb
+fetchPosterBtn.addEventListener("click", async () => {
+  const title = movieTitleInput.value.trim();
+  if (!title) return alert("Сначала введи название");
+  posterPreview.innerHTML = "Ищу...";
+  try {
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(title)}`);
+    const data = await res.json();
+    if (data.Poster && data.Poster !== "N/A") {
+      pendingPosterUrl = data.Poster;
+      posterUrlInput.value = pendingPosterUrl;
+      posterPreview.innerHTML = `<img src="${pendingPosterUrl}">`;
+    } else {
+      posterPreview.innerHTML = "";
+      alert("OMDb не нашёл постер — вставь ссылку вручную");
+    }
+  } catch (e) {
+    posterPreview.innerHTML = "";
+    alert("Ошибка поиска постера — вставь ссылку вручную");
+  }
 });
 
 movieSaveBtn.addEventListener("click", async () => {
   const title = movieTitleInput.value.trim();
-  const date = movieDateInput.value;
+  const date = pendingStatus === "watchlist" ? "" : movieDateInput.value;
   if (!title) return alert("Введи название");
 
   movieSaveBtn.disabled = true;
   movieSaveBtn.textContent = "Сохраняю...";
 
   try {
-    let posterUrl = pendingPosterUrl;
-
-    // Если выбран новый файл - заливаем в Storage и получаем ссылку
-    if (pendingPosterBlob) {
-      const filename = `posters/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-      const storageRef = ref(storage, filename);
-      await uploadBytes(storageRef, pendingPosterBlob);
-      posterUrl = await getDownloadURL(storageRef);
-    }
+    const posterUrl = posterUrlInput.value.trim();
 
     if (editingMovieId) {
       await updateDoc(doc(db, "movies", editingMovieId), {
-        title, date, posterUrl, type: pendingType
+        title, date, posterUrl, type: pendingType, status: pendingStatus
       });
     } else {
       await addDoc(collection(db, "movies"), {
-        title, date, posterUrl, type: pendingType,
+        title, date, posterUrl, type: pendingType, status: pendingStatus,
         ratings: {},
         createdAt: serverTimestamp()
       });
@@ -352,7 +448,53 @@ ratingSaveBtn.addEventListener("click", async () => {
 });
 
 // ==============================
-// 8. УТИЛИТЫ
+// 8. СТАТИСТИКА
+// ==============================
+statsBtn.addEventListener("click", () => {
+  statsBody.innerHTML = buildStatsHtml();
+  statsModal.classList.remove("hidden");
+});
+statsCloseBtn.addEventListener("click", () => statsModal.classList.add("hidden"));
+
+function buildStatsHtml() {
+  const watched = currentMovies.filter(m => (m.status || "watched") === "watched");
+  const byType = { movie: 0, series: 0, cartoon: 0 };
+  watched.forEach(m => { byType[m.type || "movie"]++; });
+
+  const userStats = {};
+  Object.keys(USERS).forEach(uid => { userStats[uid] = []; });
+  watched.forEach(m => {
+    Object.entries(m.ratings || {}).forEach(([uid, r]) => {
+      if (userStats[uid] && typeof r.score === "number") userStats[uid].push(r.score);
+    });
+  });
+
+  const avgOf = (arr) => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : "—";
+
+  let html = `<div class="stats-section-title">Всего просмотрено</div>`;
+  html += statRow("Фильмов", byType.movie);
+  html += statRow("Сериалов", byType.series);
+  html += statRow("Мультфильмов", byType.cartoon);
+  html += statRow("Всего", watched.length);
+
+  html += `<div class="stats-section-title">Средняя оценка</div>`;
+  Object.entries(USERS).forEach(([uid, info]) => {
+    html += statRow(info.name, avgOf(userStats[uid]));
+  });
+
+  const watchlistCount = currentMovies.filter(m => (m.status || "watched") === "watchlist").length;
+  html += `<div class="stats-section-title">В планах</div>`;
+  html += statRow("Watchlist", watchlistCount);
+
+  return html;
+}
+
+function statRow(label, value) {
+  return `<div class="stat-row"><span class="label">${escapeHtml(String(label))}</span><span class="value">${escapeHtml(String(value))}</span></div>`;
+}
+
+// ==============================
+// 9. УТИЛИТЫ
 // ==============================
 function escapeHtml(str) {
   const div = document.createElement("div");
