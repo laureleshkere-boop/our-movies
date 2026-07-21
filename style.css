@@ -70,7 +70,9 @@ textarea { resize: vertical; }
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
+.btn:active { transform: scale(0.96); opacity: 0.9; }
 
 .btn-primary { background: var(--accent); color: white; }
 .btn-secondary { background: var(--accent-2); color: white; }
@@ -99,6 +101,83 @@ textarea { resize: vertical; }
 }
 .topbar h1 { font-size: 1.2rem; margin: 0; }
 
+.topbar-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ---------- Status toggle (watched/watchlist) ---------- */
+.status-toggle {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px 0;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.status-opt {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.status-opt.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* ---------- Sort row ---------- */
+.sort-row {
+  padding: 10px 12px 0;
+  max-width: 640px;
+  margin: 0 auto;
+}
+#sort-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #3a3a3a;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+/* ---------- Stats modal ---------- */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 0.9rem;
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-row .label { color: var(--text-dim); }
+.stat-row .value { font-weight: 700; }
+.stats-section-title {
+  margin: 14px 0 4px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- Watchlist card variant ---------- */
+.watchlist-tag {
+  display: inline-block;
+  background: var(--accent-2);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
 /* ---------- Tabs ---------- */
 .tabs {
   display: flex;
@@ -117,6 +196,7 @@ textarea { resize: vertical; }
   color: var(--text-dim);
   font-size: 0.85rem;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .tab.active {
   background: var(--accent);
@@ -146,6 +226,7 @@ textarea { resize: vertical; }
   color: var(--text-dim);
   font-size: 0.85rem;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .type-opt.active {
   border-color: var(--accent);
@@ -153,23 +234,21 @@ textarea { resize: vertical; }
   background: #3a2222;
 }
 
-/* ---------- Poster upload ---------- */
-.upload-label {
-  display: block;
-  text-align: center;
-  padding: 12px;
-  border: 1px dashed #444;
-  border-radius: 10px;
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 0.9rem;
+/* ---------- Poster URL ---------- */
+.poster-url-row {
+  display: flex;
+  gap: 8px;
 }
+.poster-url-row input { flex: 1; }
+.poster-url-row .btn { flex-shrink: 0; padding: 12px 14px; font-size: 0.85rem; }
+
 #poster-preview img {
   width: 120px;
   border-radius: 8px;
   margin-top: 8px;
   aspect-ratio: 2 / 3;
   object-fit: cover;
+  background: var(--surface-2);
 }
 
 /* ---------- Movie list ---------- */
@@ -187,6 +266,12 @@ textarea { resize: vertical; }
   background: var(--surface);
   border-radius: var(--radius);
   overflow: hidden;
+  animation: cardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .movie-card-header {
@@ -194,7 +279,9 @@ textarea { resize: vertical; }
   gap: 12px;
   padding: 12px;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
+.movie-card-header:active { background: var(--surface-2); }
 
 .movie-poster {
   width: 64px;
@@ -220,11 +307,28 @@ textarea { resize: vertical; }
 }
 
 .movie-card-body {
-  border-top: 1px solid #2a2a2a;
-  padding: 12px;
-  display: none;
+  border-top: 1px solid transparent;
+  padding: 0 12px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease,
+              padding 0.32s ease;
 }
-.movie-card.expanded .movie-card-body { display: block; }
+.movie-card.expanded .movie-card-body {
+  max-height: 600px;
+  opacity: 1;
+  padding: 12px;
+  border-top-color: #2a2a2a;
+}
+
+.movie-poster {
+  transition: transform 0.2s ease;
+}
+.movie-card-header:active .movie-poster {
+  transform: scale(0.97);
+}
 
 .user-rating-row {
   display: flex;
@@ -265,7 +369,9 @@ textarea { resize: vertical; }
   box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   cursor: pointer;
   z-index: 10;
+  transition: transform 0.15s ease;
 }
+.fab:active { transform: scale(0.9); }
 
 /* ---------- Modal ---------- */
 .modal {
@@ -276,6 +382,12 @@ textarea { resize: vertical; }
   align-items: flex-end;
   justify-content: center;
   z-index: 20;
+  animation: overlayIn 0.2s ease both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
@@ -287,6 +399,12 @@ textarea { resize: vertical; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: sheetIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sheetIn {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 @media (min-width: 600px) {
