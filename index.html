@@ -26,6 +26,13 @@
       <button id="logout-btn" class="icon-btn" title="Выйти">⎋</button>
     </header>
 
+    <div class="tabs" id="type-tabs">
+      <button class="tab active" data-type="all">Все</button>
+      <button class="tab" data-type="movie">Фильмы</button>
+      <button class="tab" data-type="series">Сериалы</button>
+      <button class="tab" data-type="cartoon">Мультфильмы</button>
+    </div>
+
     <main id="movie-list" class="movie-list"></main>
 
     <button id="add-movie-fab" class="fab" title="Добавить фильм">+</button>
@@ -35,9 +42,21 @@
   <div id="movie-modal" class="modal hidden">
     <div class="modal-content">
       <h2 id="movie-modal-title">Новый фильм</h2>
-      <input type="text" id="movie-title-input" placeholder="Название фильма">
-      <button id="fetch-poster-btn" class="btn btn-secondary">Найти постер</button>
+      <input type="text" id="movie-title-input" placeholder="Название">
+
+      <div class="type-select" id="movie-type-select">
+        <button type="button" class="type-opt active" data-type="movie">🎬 Фильм</button>
+        <button type="button" class="type-opt" data-type="series">📺 Сериал</button>
+        <button type="button" class="type-opt" data-type="cartoon">🧸 Мультфильм</button>
+      </div>
+
+      <label class="upload-label" for="poster-file-input">
+        <span id="upload-label-text">Загрузить постер</span>
+      </label>
+      <input type="file" id="poster-file-input" accept="image/*" class="hidden">
+      <canvas id="poster-canvas" width="300" height="450" class="hidden"></canvas>
       <div id="poster-preview"></div>
+
       <input type="date" id="movie-date-input">
       <div class="modal-actions">
         <button id="movie-cancel-btn" class="btn btn-ghost">Отмена</button>
