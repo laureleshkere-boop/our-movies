@@ -1,127 +1,67 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Наш Киноархив</title>
-    
-    <!-- ВОТ ЭТА СТРОЧКА ПОДКЛЮЧАЕТ CSS -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- А это иконки, которые я добавил в первом шаге -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Наши фильмы</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Дальше твой контент... -->
 
-    <div class="container">
-        <header>
-            <h1>🎬 Наш Киноархив</h1>
-            <p>Место, где мы спорим об оценках</p>
-        </header>
-
-        <!-- Секция добавления нового фильма -->
-        <section class="add-movie-section">
-            <div class="card add-card">
-                <h2>Добавить новый фильм</h2>
-                <form class="movie-form">
-                    <div class="form-group full-width">
-                        <input type="text" placeholder="Название фильма..." required>
-                        <input type="date" title="Дата просмотра">
-                    </div>
-
-                    <div class="review-inputs">
-                        <!-- Твой блок -->
-                        <div class="user-input-box">
-                            <label>Твоя оценка (1-10)</label>
-                            <input type="number" min="1" max="10" placeholder="10">
-                            <textarea placeholder="Твой комментарий..."></textarea>
-                        </div>
-
-                        <!-- Её блок -->
-                        <div class="user-input-box">
-                            <label>Её оценка (1-10)</label>
-                            <input type="number" min="1" max="10" placeholder="10">
-                            <textarea placeholder="Её комментарий..."></textarea>
-                        </div>
-                    </div>
-
-                    <button type="button" class="btn-add">Добавить в список</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Список фильмов -->
-        <section class="movie-list">
-
-            <!-- Пример одной карточки фильма -->
-            <article class="movie-card">
-                <div class="movie-header">
-                    <div class="title-wrapper">
-                        <h2 class="movie-title">Интерстеллар</h2>
-                        <span class="watch-date">Просмотрено: 15.10.2023</span>
-                    </div>
-                    <div class="movie-actions">
-                        <button class="btn-icon edit" title="Редактировать"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon delete" title="Удалить"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-
-                <div class="reviews-container">
-                    <!-- Твой отзыв -->
-                    <div class="review-block man">
-                        <div class="user-info">
-                            <span class="user-name">Твоё мнение</span>
-                            <span class="rating-badge">9.0</span>
-                        </div>
-                        <p class="comment">Визуал просто отвал башки, музыка Циммера как всегда на высоте. Но в конце с книжным шкафом немного перемудрили, как по мне.</p>
-                    </div>
-
-                    <!-- Её отзыв -->
-                    <div class="review-block woman">
-                        <div class="user-info">
-                            <span class="user-name">Её мнение</span>
-                            <span class="rating-badge">10</span>
-                        </div>
-                        <p class="comment">Рыдала полфильма! Очень трогательная история про отца и дочь. Мэттью Макконахи просто красавчик, лучший фильм в мире!</p>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Еще один пример для наглядности -->
-            <article class="movie-card">
-                <div class="movie-header">
-                    <div class="title-wrapper">
-                        <h2 class="movie-title">Веном 2</h2>
-                        <span class="watch-date">Просмотрено: 02.11.2023</span>
-                    </div>
-                    <div class="movie-actions">
-                        <button class="btn-icon edit"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-
-                <div class="reviews-container">
-                    <div class="review-block man">
-                        <div class="user-info">
-                            <span class="user-name">Твоё мнение</span>
-                            <span class="rating-badge">5.0</span>
-                        </div>
-                        <p class="comment">Слабовато. Первый был бодрее, а тут какой-то сумбур и графон местами мыльный.</p>
-                    </div>
-
-                    <div class="review-block woman">
-                        <div class="user-info">
-                            <span class="user-name">Её мнение</span>
-                            <span class="rating-badge">4.0</span>
-                        </div>
-                        <p class="comment">Вообще не понравилось, скучно и глупо. Зря потратили вечер.</p>
-                    </div>
-                </div>
-            </article>
-
-        </section>
+  <!-- Экран входа -->
+  <div id="login-screen" class="screen">
+    <div class="login-box">
+      <h1>🎬 Наши фильмы</h1>
+      <input type="email" id="login-email" placeholder="Email" autocomplete="username">
+      <input type="password" id="login-password" placeholder="Пароль" autocomplete="current-password">
+      <button id="login-btn" class="btn btn-primary">Войти</button>
+      <p id="login-error" class="error-text"></p>
     </div>
+  </div>
 
+  <!-- Основной экран -->
+  <div id="app-screen" class="screen hidden">
+    <header class="topbar">
+      <h1>🎬 Наши фильмы</h1>
+      <button id="logout-btn" class="icon-btn" title="Выйти">⎋</button>
+    </header>
+
+    <main id="movie-list" class="movie-list"></main>
+
+    <button id="add-movie-fab" class="fab" title="Добавить фильм">+</button>
+  </div>
+
+  <!-- Модалка добавления/редактирования фильма (название, дата, постер) -->
+  <div id="movie-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="movie-modal-title">Новый фильм</h2>
+      <input type="text" id="movie-title-input" placeholder="Название фильма">
+      <button id="fetch-poster-btn" class="btn btn-secondary">Найти постер</button>
+      <div id="poster-preview"></div>
+      <input type="date" id="movie-date-input">
+      <div class="modal-actions">
+        <button id="movie-cancel-btn" class="btn btn-ghost">Отмена</button>
+        <button id="movie-save-btn" class="btn btn-primary">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка оценки/комментария -->
+  <div id="rating-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Твоя оценка</h2>
+      <div class="rating-input-row">
+        <input type="number" id="rating-score-input" min="0" max="10" step="0.5" placeholder="0-10">
+      </div>
+      <textarea id="rating-comment-input" placeholder="Комментарий (необязательно)" rows="3"></textarea>
+      <div class="modal-actions">
+        <button id="rating-cancel-btn" class="btn btn-ghost">Отмена</button>
+        <button id="rating-save-btn" class="btn btn-primary">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
