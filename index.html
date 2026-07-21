@@ -23,14 +23,32 @@
   <div id="app-screen" class="screen hidden">
     <header class="topbar">
       <h1>🎬 Наши фильмы</h1>
-      <button id="logout-btn" class="icon-btn" title="Выйти">⎋</button>
+      <div class="topbar-actions">
+        <button id="stats-btn" class="icon-btn" title="Статистика">📊</button>
+        <button id="logout-btn" class="icon-btn" title="Выйти">⎋</button>
+      </div>
     </header>
+
+    <div class="status-toggle" id="status-toggle">
+      <button class="status-opt active" data-status="watched">Просмотрено</button>
+      <button class="status-opt" data-status="watchlist">📌 Watchlist</button>
+    </div>
 
     <div class="tabs" id="type-tabs">
       <button class="tab active" data-type="all">Все</button>
       <button class="tab" data-type="movie">Фильмы</button>
       <button class="tab" data-type="series">Сериалы</button>
       <button class="tab" data-type="cartoon">Мультфильмы</button>
+    </div>
+
+    <div class="sort-row" id="sort-row">
+      <select id="sort-select">
+        <option value="date_desc">Дата: сначала новые</option>
+        <option value="date_asc">Дата: сначала старые</option>
+        <option value="rating_desc">Оценка: сначала лучшие</option>
+        <option value="rating_asc">Оценка: сначала хуже</option>
+        <option value="disagreement">По разногласию</option>
+      </select>
     </div>
 
     <main id="movie-list" class="movie-list"></main>
@@ -44,20 +62,26 @@
       <h2 id="movie-modal-title">Новый фильм</h2>
       <input type="text" id="movie-title-input" placeholder="Название">
 
+      <div class="type-select" id="movie-status-select">
+        <button type="button" class="type-opt active" data-status="watched">✅ Просмотрено</button>
+        <button type="button" class="type-opt" data-status="watchlist">📌 В планах</button>
+      </div>
+
       <div class="type-select" id="movie-type-select">
         <button type="button" class="type-opt active" data-type="movie">🎬 Фильм</button>
         <button type="button" class="type-opt" data-type="series">📺 Сериал</button>
         <button type="button" class="type-opt" data-type="cartoon">🧸 Мультфильм</button>
       </div>
 
-      <label class="upload-label" for="poster-file-input">
-        <span id="upload-label-text">Загрузить постер</span>
-      </label>
-      <input type="file" id="poster-file-input" accept="image/*" class="hidden">
-      <canvas id="poster-canvas" width="300" height="450" class="hidden"></canvas>
+      <div class="poster-url-row">
+        <input type="text" id="poster-url-input" placeholder="Ссылка на постер (необязательно)">
+        <button type="button" id="fetch-poster-btn" class="btn btn-secondary">OMDb</button>
+      </div>
       <div id="poster-preview"></div>
 
-      <input type="date" id="movie-date-input">
+      <div id="date-field-wrap">
+        <input type="date" id="movie-date-input">
+      </div>
       <div class="modal-actions">
         <button id="movie-cancel-btn" class="btn btn-ghost">Отмена</button>
         <button id="movie-save-btn" class="btn btn-primary">Сохранить</button>
@@ -76,6 +100,17 @@
       <div class="modal-actions">
         <button id="rating-cancel-btn" class="btn btn-ghost">Отмена</button>
         <button id="rating-save-btn" class="btn btn-primary">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка статистики -->
+  <div id="stats-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Статистика</h2>
+      <div id="stats-body"></div>
+      <div class="modal-actions">
+        <button id="stats-close-btn" class="btn btn-primary">Закрыть</button>
       </div>
     </div>
   </div>
