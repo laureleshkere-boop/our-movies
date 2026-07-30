@@ -256,35 +256,63 @@ textarea { resize: vertical; }
   margin-top: 6px;
 }
 
-/* ---------- Tabs ---------- */
+/* ---------- Tabs (liquid glass slider) ---------- */
 .tabs {
+  position: relative;
   display: flex;
-  gap: 8px;
-  padding: 10px 12px 0;
-  overflow-x: auto;
-  max-width: 640px;
-  margin: 0 auto;
-  scrollbar-width: none;
+  margin: 10px auto 0;
+  padding: 6px;
+  max-width: 616px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
 }
-.tabs::-webkit-scrollbar { display: none; }
+
+.tabs::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  height: calc(100% - 12px);
+  width: calc((100% - 12px) / 4);
+  background: rgba(255, 93, 115, 0.2);
+  border: 1px solid rgba(255, 93, 115, 0.3);
+  border-radius: 40px;
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tabs:has(.tab:nth-child(2).active)::before { transform: translateX(100%); }
+.tabs:has(.tab:nth-child(3).active)::before { transform: translateX(200%); }
+.tabs:has(.tab:nth-child(4).active)::before { transform: translateX(300%); }
 
 .tab {
-  flex-shrink: 0;
-  padding: 9px 16px;
-  border-radius: 20px;
-  border: 1px solid var(--surface-border);
-  background: var(--surface);
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  height: 45px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
   color: var(--text-dim);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  user-select: none;
+  transition: color 0.3s ease;
 }
+.tab:hover { color: var(--text); }
 .tab.active {
-  background: linear-gradient(135deg, var(--accent), #ff8fa3);
-  border-color: transparent;
   color: white;
   font-weight: 600;
-  box-shadow: 0 4px 16px var(--accent-glow);
 }
 
 .type-badge {
