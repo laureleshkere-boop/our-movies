@@ -266,6 +266,7 @@ textarea { resize: vertical; }
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 50px;
+  overflow: hidden;
 }
 
 .tabs::before {
@@ -277,7 +278,7 @@ textarea { resize: vertical; }
   width: calc((100% - 12px) / 4);
   background: rgba(255, 93, 115, 0.2);
   border: 1px solid rgba(255, 93, 115, 0.3);
-  border-radius: 40px;
+  border-radius: 999px;
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
