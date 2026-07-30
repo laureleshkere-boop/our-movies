@@ -294,6 +294,13 @@ textarea { resize: vertical; }
   margin-left: 6px;
 }
 
+.picked-by {
+  display: inline-block;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
 /* ---------- Type select (modal) ---------- */
 .type-select {
   display: flex;
@@ -315,6 +322,12 @@ textarea { resize: vertical; }
   color: var(--text);
   background: linear-gradient(135deg, rgba(255, 93, 115, 0.35), rgba(255, 93, 115, 0.12));
   box-shadow: 0 4px 14px rgba(255, 93, 115, 0.25);
+}
+
+.picker-label {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 2px 0 -4px;
 }
 
 /* ---------- Poster URL ---------- */
