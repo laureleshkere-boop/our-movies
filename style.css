@@ -256,72 +256,48 @@ textarea { resize: vertical; }
   margin-top: 6px;
 }
 
-/* ---------- Tabs (liquid glass slider) ---------- */
+/* ---------- Tabs (glass style, no floating overlay) ---------- */
 .tabs {
   position: relative;
   display: flex;
   margin: 10px auto 0;
-  padding: 4px; /* Внутренний отступ, чтобы кнопка не прилипала к краям */
+  padding: 6px;
   max-width: 616px;
-  background: var(--bg-2); /* Темная база */
-  border: 1px solid var(--surface-border);
-  border-radius: 100px; /* Идеальный овал */
-  z-index: 1;
-  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
 }
-
-.tabs::before {
-  content: "";
-  position: absolute;
-  /* Центрируем выделение вертикально внутри padding */
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  /* Ширина одной кнопки с учетом padding контейнера */
-  width: calc((100% - 8px) / 4);
-  
-  /* Цвет выделения (из твоих переменных) */
-  background: var(--accent); 
-  border-radius: 100px;
-  
-  /* Плавное движение */
-  transition: transform 0.35s var(--ease);
-  z-index: 0;
-  pointer-events: none;
-  
-  /* Легкое свечение самого выделения */
-  box-shadow: 0 4px 12px var(--accent-glow);
-}
-
-.tabs:has(.tab:nth-child(1).active)::before { transform: translateX(0); }
-.tabs:has(.tab:nth-child(2).active)::before { transform: translateX(100%); }
-.tabs:has(.tab:nth-child(3).active)::before { transform: translateX(200%); }
-.tabs:has(.tab:nth-child(4).active)::before { transform: translateX(300%); }
 
 .tab {
   position: relative;
-  z-index: 2; /* Текст ВСЕГДА над выделением */
   flex: 1;
-  height: 40px;
+  min-width: 0;
+  height: 45px;
   padding: 0 4px;
-  border: none;
-  background: transparent !important; /* Убираем все лишние фоны */
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
   color: var(--text-dim);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
   user-select: none;
-  transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none;
+  transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
 .tab:hover { color: var(--text); }
 .tab.active {
-  color: #fff;
+  color: white;
+  font-weight: 600;
+  background: rgba(255, 93, 115, 0.2);
+  border-color: rgba(255, 93, 115, 0.3);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
+
 
 .type-badge {
   display: inline-block;
