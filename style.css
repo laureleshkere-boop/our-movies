@@ -261,55 +261,62 @@ textarea { resize: vertical; }
   position: relative;
   display: flex;
   margin: 10px auto 0;
-  padding: 6px;
+  padding: 4px; /* Немного уменьшили отступ для аккуратности */
   max-width: 616px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--surface-border);
   border-radius: 50px;
-  overflow: hidden;
+  overflow: hidden; /* Критически важно: обрезает стекляшку по краям контейнера */
+  z-index: 1;
 }
 
 .tabs::before {
   content: "";
   position: absolute;
-  top: 6px;
-  left: 6px;
-  height: calc(100% - 12px);
-  width: calc((100% - 12px) / 4);
-  background: rgba(255, 93, 115, 0.2);
+  /* Стекляшка теперь занимает всю высоту с учетом padding контейнера */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 25%; /* 100% / 4 кнопки */
+  
+  /* Цвет и эффект */
+  background: rgba(255, 93, 115, 0.25); /* Чуть насыщеннее */
   border: 1px solid rgba(255, 93, 115, 0.3);
-  border-radius: 999px;
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  backdrop-filter: blur(12px) saturate(140%);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
+  border-radius: 50px; /* Должно совпадать с родителем или быть чуть меньше */
+  
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+  backdrop-filter: blur(var(--blur)) saturate(140%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  
+  transition: transform 0.4s var(--ease);
+  z-index: 0;
   pointer-events: none;
 }
 
+.tabs:has(.tab:nth-child(1).active)::before { transform: translateX(0); }
 .tabs:has(.tab:nth-child(2).active)::before { transform: translateX(100%); }
 .tabs:has(.tab:nth-child(3).active)::before { transform: translateX(200%); }
 .tabs:has(.tab:nth-child(4).active)::before { transform: translateX(300%); }
 
 .tab {
   position: relative;
-  z-index: 2;
+  z-index: 2; /* Текст над стекляшкой */
   flex: 1;
-  min-width: 0;
-  height: 45px;
-  padding: 0 4px;
+  height: 42px; /* Фиксированная высота для стабильности */
+  padding: 0 10px;
   border: none;
-  background: transparent;
+  background: transparent; /* Убедись, что тут нет фонового цвета */
   color: var(--text-dim);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   cursor: pointer;
   user-select: none;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .tab:hover { color: var(--text); }
 .tab.active {
   color: white;
