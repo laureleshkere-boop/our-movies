@@ -261,36 +261,36 @@ textarea { resize: vertical; }
   position: relative;
   display: flex;
   margin: 10px auto 0;
-  padding: 4px; /* Немного уменьшили отступ для аккуратности */
+  padding: 4px; /* Внутренний отступ, чтобы кнопка не прилипала к краям */
   max-width: 616px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-2); /* Темная база */
   border: 1px solid var(--surface-border);
-  border-radius: 50px;
-  overflow: hidden; /* Критически важно: обрезает стекляшку по краям контейнера */
+  border-radius: 100px; /* Идеальный овал */
   z-index: 1;
+  overflow: hidden;
 }
 
 .tabs::before {
   content: "";
   position: absolute;
-  /* Стекляшка теперь занимает всю высоту с учетом padding контейнера */
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 25%; /* 100% / 4 кнопки */
+  /* Центрируем выделение вертикально внутри padding */
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  /* Ширина одной кнопки с учетом padding контейнера */
+  width: calc((100% - 8px) / 4);
   
-  /* Цвет и эффект */
-  background: rgba(255, 93, 115, 0.25); /* Чуть насыщеннее */
-  border: 1px solid rgba(255, 93, 115, 0.3);
-  border-radius: 50px; /* Должно совпадать с родителем или быть чуть меньше */
+  /* Цвет выделения (из твоих переменных) */
+  background: var(--accent); 
+  border-radius: 100px;
   
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
-  backdrop-filter: blur(var(--blur)) saturate(140%);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  
-  transition: transform 0.4s var(--ease);
+  /* Плавное движение */
+  transition: transform 0.35s var(--ease);
   z-index: 0;
   pointer-events: none;
+  
+  /* Легкое свечение самого выделения */
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
 
 .tabs:has(.tab:nth-child(1).active)::before { transform: translateX(0); }
@@ -300,27 +300,27 @@ textarea { resize: vertical; }
 
 .tab {
   position: relative;
-  z-index: 2; /* Текст над стекляшкой */
+  z-index: 2; /* Текст ВСЕГДА над выделением */
   flex: 1;
-  height: 42px; /* Фиксированная высота для стабильности */
-  padding: 0 10px;
+  height: 40px;
+  padding: 0 4px;
   border: none;
-  background: transparent; /* Убедись, что тут нет фонового цвета */
+  background: transparent !important; /* Убираем все лишние фоны */
   color: var(--text-dim);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  outline: none;
 }
 
 .tab:hover { color: var(--text); }
 .tab.active {
-  color: white;
-  font-weight: 600;
+  color: #fff;
 }
 
 .type-badge {
