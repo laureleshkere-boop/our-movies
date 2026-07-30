@@ -61,6 +61,7 @@ const posterPreview = document.getElementById("poster-preview");
 const posterUrlInput = document.getElementById("poster-url-input");
 const fetchPosterBtn = document.getElementById("fetch-poster-btn");
 const movieTypeSelect = document.getElementById("movie-type-select");
+const moviePickerSelect = document.getElementById("movie-picker-select");
 const movieCancelBtn = document.getElementById("movie-cancel-btn");
 const movieSaveBtn = document.getElementById("movie-save-btn");
 const typeTabs = document.getElementById("type-tabs");
@@ -87,6 +88,7 @@ let editingMovieId = null;   // если не null - редактируем су
 let pendingPosterUrl = "";   // ссылка на постер (текстом)
 let pendingType = "movie";
 let pendingStatus = "watched";
+let pendingPicker = "";
 let currentFilter = "all";
 let currentStatusView = "watched";
 let currentSort = "date_desc";
@@ -240,6 +242,7 @@ function buildMovieCard(movie) {
     <img class="movie-poster" src="${movie.posterUrl || ''}" onerror="this.style.visibility='hidden'">
     <div class="movie-info">
       <h3>${escapeHtml(movie.title)}<span class="type-badge">${TYPE_LABELS[movie.type || "movie"]}</span></h3>
+      ${movie.pickedBy && USERS[movie.pickedBy] ? `<div class="picked-by">Выбрал(а): ${escapeHtml(USERS[movie.pickedBy].name)}</div>` : ""}
       ${isWatchlist
         ? `<span class="watchlist-tag">📌 В планах</span>`
         : `<div class="date">${movie.date || ""}</div><span class="avg-badge">★ ${avg}</span>`}
@@ -326,6 +329,7 @@ function openMovieModal(movie) {
   pendingPosterUrl = movie ? (movie.posterUrl || "") : "";
   pendingType = movie ? (movie.type || "movie") : "movie";
   pendingStatus = movie ? (movie.status || "watched") : currentStatusView;
+  pendingPicker = movie ? (movie.pickedBy || "") : (currentUser ? currentUser.uid : "");
 
   movieModalTitle.textContent = movie ? "Редактировать" : "Добавить";
   movieTitleInput.value = movie ? movie.title : "";
@@ -338,6 +342,9 @@ function openMovieModal(movie) {
   });
   movieStatusSelect.querySelectorAll(".type-opt").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.status === pendingStatus);
+  });
+  moviePickerSelect.querySelectorAll(".type-opt").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.picker === pendingPicker);
   });
   dateFieldWrap.classList.toggle("hidden", pendingStatus === "watchlist");
 
@@ -358,6 +365,24 @@ movieTypeSelect.addEventListener("click", (e) => {
   if (!btn) return;
   pendingType = btn.dataset.type;
   movieTypeSelect.querySelectorAll(".type-opt").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+});
+
+// Кнопки "кто выбрал" собираем из USERS
+Object.entries(USERS).forEach(([uid, info]) => {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "type-opt";
+  btn.dataset.picker = uid;
+  btn.textContent = info.name;
+  moviePickerSelect.appendChild(btn);
+});
+
+moviePickerSelect.addEventListener("click", (e) => {
+  const btn = e.target.closest(".type-opt");
+  if (!btn) return;
+  pendingPicker = btn.dataset.picker;
+  moviePickerSelect.querySelectorAll(".type-opt").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
 });
 
@@ -402,11 +427,11 @@ movieSaveBtn.addEventListener("click", async () => {
 
     if (editingMovieId) {
       await updateDoc(doc(db, "movies", editingMovieId), {
-        title, date, posterUrl, type: pendingType, status: pendingStatus
+        title, date, posterUrl, type: pendingType, status: pendingStatus, pickedBy: pendingPicker
       });
     } else {
       await addDoc(collection(db, "movies"), {
-        title, date, posterUrl, type: pendingType, status: pendingStatus,
+        title, date, posterUrl, type: pendingType, status: pendingStatus, pickedBy: pendingPicker,
         ratings: {},
         createdAt: serverTimestamp()
       });
@@ -485,6 +510,16 @@ function buildStatsHtml() {
   const watchlistCount = currentMovies.filter(m => (m.status || "watched") === "watchlist").length;
   html += `<div class="stats-section-title">В планах</div>`;
   html += statRow("Watchlist", watchlistCount);
+
+  const pickerCounts = {};
+  Object.keys(USERS).forEach(uid => { pickerCounts[uid] = 0; });
+  watched.forEach(m => {
+    if (m.pickedBy && pickerCounts.hasOwnProperty(m.pickedBy)) pickerCounts[m.pickedBy]++;
+  });
+  html += `<div class="stats-section-title">Кто выбирал фильмы</div>`;
+  Object.entries(USERS).forEach(([uid, info]) => {
+    html += statRow(info.name, pickerCounts[uid]);
+  });
 
   return html;
 }
